@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+    <title>Dish Classification</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/bootstrap.min.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <style>
+      /* Custom styles for nutrition table */
+      table.nutrition-table {
+        width: 70%;
+        margin-top: 20px;
+        border-collapse: collapse;
+      }
+      table.nutrition-table th,
+      table.nutrition-table td {
+        padding: 8px 12px;
+        text-align: center;
+        border: 1px solid #f0a48b;
+        
+      }
+      table.nutrition-table th {
+        background-color: #4b2e2e;
+        color: white;
+      }
+      table.nutrition-table td {
+        background-color: #470e0e;
+      }
+      /* Bold dish name */
+      .dish-name {
+        font-weight: bold;
+        color: #ffddc1;
+        font-size: 1.8em;
+      }
+
+      .custom-file-upload {
+        position: relative;
+        display: inline-block;
+        width: 70%;
+      }
+
+      .custom-file-upload input[type="file"] {
+        display: none; /* Masquer l'input file réel */
+      }
+
+      .custom-file-text {
+        border: #470e0e solid 3px ;
+        
+        display: block;
+        width: 100%;
+        padding: 15px;
+        background-color: #ffd7ba;
+        color: #4b2e2e;
+        
+        border-radius: 10px;
+        text-align: center;
+        font-size: 1.2em;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.2s;
+        background-image: url("path/to/default-image.jpg"); /* Image de fond par défaut */
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
+      }
+
+      .custom-file-text:hover {
+        background-color: #ffd7ba;
+        transform: scale(1.05);
+      }
+
+      /* Changer l'apparence du label quand un fichier est sélectionné */
+      #image-upload:focus + .custom-file-text,
+      #image-upload:valid + .custom-file-text {
+        background-color: #ffd7ba;
+        color: #4b2e2e;
+      }
+
+      .file-text {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #ffd7ba;
+        color: #4b2e2e;
+        font-size: 1em;
+        text-align: center;
+      }
+      .file-text:hover {
+        background-color: #ffd7ba;
+      }
+
+      @media screen and (max-width: 768px) {
+        #takePhoto {
+          font-size: 1em;
+          padding: 10px 25px;
+        }
+
+        #webcam-container {
+          margin-top: 15px;
+        }
+      }
+
+      @media screen and (max-width: 480px) {
+        #takePhoto {
+          font-size: 0.9em;
+          padding: 8px 20px;
+        }
+
+        #webcam-container {
+          margin-top: 10px;
+        }
+      }
+
+      /* Custom styles for nutrition table */
+      table.nutrition-table {
+        border-collapse: collapse;
+      }
+      table.nutrition-table th,
+      table.nutrition-table td {
+        padding: 12px 18px;
+        text-align: center;
+        border: 1px solid #f0a48b;
+      }
+      table.nutrition-table th {
+        background-color: #4b2e2e;
+        color: white;
+      }
+      table.nutrition-table td {
+        background-color: #470e0e;
+      }
+
+      /* Bold dish name */
+      .dish-name {
+        font-weight: bold;
+        color: #ffddc1;
+        font-size: 1.8em;
+        text-transform: uppercase;
+      }
+
+      /* Styling for file upload */
+      .custom-file-upload {
+        position: relative;
+        display: inline-block;
+        width: 70%;
+      }
+
+      .custom-file-upload input[type="file"] {
+        display: none;
+      }
+
+      .custom-file-text {
+        display: block;
+        width: 100%;
+        padding: 15px;
+        background-color: #ffd7ba;
+        color: #4b2e2e;
+        border: 1px solid #ffd7ba;
+        border-radius: 10px;
+        text-align: center;
+        font-size: 1.2em;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.2s;
+        background-image: url("path/to/default-image.jpg");
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
+      }
+
+      .custom-file-text:hover {
+        background-color: #ffd7ba;
+        transform: scale(1.05);
+      }
+
+      /* File upload focus styles */
+      #image-upload:focus + .custom-file-text,
+      #image-upload:valid + .custom-file-text {
+        background-color: #ffd7ba;
+        color: #4b2e2e;
+      }
+
+      .file-text {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #ffd7ba;
+        color: #4b2e2e;
+        font-size: 1em;
+        text-align: center;
+      }
+
+      .file-text:hover {
+        background-color: #ffd7ba;
+      }
+
+      /* Responsive design for smaller screens */
+      @media screen and (max-width: 768px) {
+        #classification-result {
+          padding: 15px;
+        }
+        .dish-name {
+          font-size: 1.5em;
+        }
+        table.nutrition-table {
+          font-size: 0.9em;
+        }
+      }
+
+      @media screen and (max-width: 480px) {
+        #classification-result {
+          padding: 10px;
+        }
+        .dish-name {
+          font-size: 1.3em;
+        }
+        table.nutrition-table {
+          font-size: 0.8em;
+        }
+        @media screen and (max-width:600px){
+
+        }
+        
+        
+      }
+    </style>
+  </head>
+  <body class="main-layout inner_page">
+    <header>
+      <div class="header">
+        <div class="container-fluid">
+          <div class="row d_flex">
+            <div class="col-md-2 col-sm-3 col logo_section">
+              <div class="full">
+                <div class="center-desk">
+                  <div class="logo">
+                    <a href="{{ url_for('index') }}"
+                      ><img
+                        src="{{ url_for('static', filename='images/logo.png') }}"
+                        alt="#"
+                        style="width: 60px"
+                    /></a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-8 col-sm-9">
+              <nav class="navigation navbar navbar-expand-md navbar-dark">
+                <div class="collapse navbar-collapse" id="navbarsExample04">
+                  <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                      <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" href="{{ url_for('index') }}"
+                        >About</a
+                      >
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" href="{{ url_for('index') }}"
+                        >Contact Us</a
+                      >
+                    </li>
+                  </ul>
+                </div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="container mt-5">
+      <div class="row justify-content-center">
+        <div
+          class="col-md-12 text_align_center"
+          style="
+            color: #f9f9f9;
+            background-color: #4b2e2e;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+          "
+        >
+          <h2 style="color: #ffddc1; margin-bottom: 30px; font-size: 2em">
+            Classification
+          </h2>
+
+          <form
+            id="image-form"
+            enctype="multipart/form-data"
+            method="POST"
+            style="margin-bottom: 30px"
+          >
+            <div class="form-group">
+              <label
+                for="image-upload"
+                style="color: #ffd7ba; font-size: 1.2em; margin-bottom: 10px"
+              >
+                Upload an image for classification:
+              </label>
+
+              <!-- Start camera -->
+              <h1
+                style="
+                  text-align: center;
+                  color: #f5f3f0;
+                  font-size: 2em;
+                  margin-bottom: 20px;
+                "
+              >
+                Take a photo with the webcam
+              </h1>
+
+              <!-- Toggle button to show/hide webcam -->
+              <div class="text-center">
+                <button
+                  type="button"
+                  id="toggle-webcam"
+                  class="btn btn-secondary"
+                  style="
+                    margin-bottom: 10px;
+                    background-color: #6c757d;
+                    border: none;
+                    color: white;
+                    font-size: 1.1em;
+                    border-radius: 12px;
+                    padding: 10px 20px;
+                    transition: background-color 0.3s ease;
+                  "
+                  onmouseover="this.style.backgroundColor='#5a6268'"
+                  onmouseout="this.style.backgroundColor='#6c757d'"
+                >
+                  Show webcam
+                </button>
+              </div>
+
+              <!-- Vidéo pour la webcam -->
+              <div
+                id="webcam-container"
+                style="display: none; text-align: center; margin-top: 20px"
+              >
+                <video
+                  id="video"
+                  autoplay
+                  style="
+                    border: solid 4px rgb(131, 128, 126);
+                    border-radius: 10px;
+                    width: 100%;
+                    max-width: 640px;
+                    height: auto;
+                  "
+                ></video>
+                <br />
+                <button
+                  id="takePhoto"
+                  class="btn btn-info"
+                  style="
+                    margin-top: 20px;
+                    margin-bottom: 10px;
+                    background-color: #17a2b8;
+                    border: none;
+                    color: white;
+                    font-size: 1.1em;
+                    padding: 12px 30px;
+                    border-radius: 12px;
+                    transition: background-color 0.3s ease, transform 0.2s ease;
+                  "
+                  onmouseover="this.style.backgroundColor='#138496'; this.style.transform='scale(1.05)'"
+                  onmouseout="this.style.backgroundColor='#17a2b8'; this.style.transform='scale(1)'"
+                  onclick="scrollToElementById('predicted-class')"
+                >
+                  Take a photo
+                </button>
+              </div>
+
+              <!-- Canvas caché pour dessiner l'image -->
+              <canvas id="canvas" style="display: none"></canvas>
+
+              <!-- End camera -->
+
+              <!-- L'input file -->
+              <div class="custom-file-upload">
+                <input
+                  type="file"
+                  class="form-control"
+                  id="image-upload"
+                  name="file"
+                  accept="image/*"
+                  required
+                  onchange="reset2()"
+                />
+                <div class="image-container">
+                  <label for="image-upload" class="custom-file-text">
+                    <span class="file-text" id="text-path-file"><b>Choose an image</b></span>
+                  </label>
+                </div>
+                
+                <style>
+                  .image-container {
+                   
+                    overflow: hidden; /* Cache tout ce qui dépasse */
+                    white-space: nowrap; /* Empêche le texte de se diviser en plusieurs lignes */
+                    text-overflow: ellipsis; /* Ajoute des points de suspension si le texte dépasse */
+                  }
+                
+                  .file-text {
+                    display: inline-block;
+                    max-width: 100%;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                  }
+                </style>
+                
+                </label>
+              </div>
+            </div>
+
+            <a href="#predicted-class" style="text-decoration: none">
+              <button
+                type="submit"
+                class="btn btn-primary"
+                style="
+                  background-color: #ff6f61;
+                  border: none;
+                  color: #ffffff;
+                  padding: 12px 25px;
+                  font-size: 1.1em;
+                  border-radius: 8px;
+                  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+                "
+              >
+                Classify Image
+              </button>
+            </a>
+
+            <!-- Reset Button -->
+            <button
+              type="button"
+              id="reset-button"
+              class="btn btn-secondary"
+              style="
+                background-color: #6c757d;
+                border: none;
+                color: #ffffff;
+                padding: 12px 25px;
+                font-size: 1.1em;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+                margin-left: 10px;
+              "
+            >
+              Reset
+            </button>
+          </form>
+
+          <div
+            id="image-preview"
+            class="mt-4 d-flex justify-content-center align-items-center"
+            style="text-align: center"
+          >
+            <img
+              id="uploaded-image"
+              src="#"
+              alt="Your image will appear here"
+              style="
+                display: none;
+                width: 100%;
+                max-width: 500px;
+                max-height: 400px;
+                object-fit: contain;
+                border: 2px solid #ffddc1;
+                border-radius: 10px;
+              "
+            />
+          </div>
+
+          <div
+            id="classification-result"
+            class="mt-4"
+            style="
+              color: #ffd7ba;
+              font-size: 1.2em;
+              background-color: #5c3f3f;
+              padding: 25px;
+              border-radius: 15px;
+              border: 2px solid #ffddc1;
+              text-align: center;
+              box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            "
+          >
+            <h3
+              style="
+                color: #ffddc1;
+                font-size: 1.8em;
+                margin-bottom: 20px;
+                font-weight: bold;
+              "
+            >
+              Classification Result
+            </h3>
+            <p
+              id="predicted-class"
+              class="dish-name"
+              style="
+                font-size: 1.5em;
+                color: #ffdf7f;
+                font-weight: bold;
+                transition: color 0.3s ease;
+              "
+            >
+              The predicted class will appear here.
+            </p>
+
+            <div
+  id="other-info-container"
+  style="
+    margin-top: 20px;
+    background-color: #5c3f3f;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    background-image: url('path/to/moroccan-pattern.jpg'); /* Ajouter un motif marocain de fond */
+    background-size: cover;
+    background-position: center;
+  "
+>
+  <h3
+    style="
+      color: #ffddc1;
+      font-size: 1.4em;
+      font-weight: bold;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3); /* Ombre de texte pour plus de contraste */
+      font-family: 'Arial', sans-serif;
+    "
+  >
+    Informations supplémentaires :
+  </h3>
+  <p
+    id="other-info"
+    style="
+      font-size: 1.2em;
+      color: #ffdf7f;
+      line-height: 1.6;
+      font-style: italic;
+      font-family: 'Georgia', serif;
+      border-left: 5px solid #ffddc1; /* Ajout d'une bordure gauche pour un effet marocain */
+      padding-left: 15px;
+      background-color: rgba(0, 0, 0, 0.4); /* Légère transparence pour l'arrière-plan du texte */
+      border-radius: 5px;
+      margin-top: 15px;
+    "
+  >
+    Les informations supplémentaires concernant le plat seront affichées ici.
+  </p>
+</div>
+
+
+<div
+id="ingredients-info-container"
+style="
+  margin-top: 20px;
+  background-color: #5c3f3f;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  background-image: url('path/to/moroccan-pattern.jpg'); /* Ajouter un motif marocain de fond */
+  background-size: cover;
+  background-position: center;
+"
+>
+<h3
+  style="
+    color: #ffddc1;
+    font-size: 1.4em;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3); /* Ombre de texte pour plus de contraste */
+    font-family: 'Arial', sans-serif;
+  "
+>
+  Ingrédients :
+</h3>
+<p
+  id="ingredients-info"
+  style="
+    font-size: 1.2em;
+    color: #ffdf7f;
+    line-height: 1.6;
+    font-style: italic;
+    font-family: 'Georgia', serif;
+    border-left: 5px solid #ffddc1; /* Ajout d'une bordure gauche pour un effet marocain */
+    padding-left: 15px;
+    background-color: rgba(0, 0, 0, 0.4); /* Légère transparence pour l'arrière-plan du texte */
+    border-radius: 5px;
+    margin-top: 15px;
+  "
+>
+  La liste des ingrédients du plat apparaîtra ici.
+</p>
+<div>
+  <center>
+  <table
+    id="nutrition-info"
+    class="nutrition-table"
+    style="
+      display: none;
+      margin-top: 20px;
+      width: 70%;
+      border-radius: 10px;
+      overflow: hidden;
+    "
+  >
+    <thead >
+      <tr>
+        <th>Calories</th>
+        <th>Protein</th>
+        <th>Carbs</th>
+        <th>Fat</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td id="calories"></td>
+        <td id="protein"></td>
+        <td id="carbs"></td>
+        <td id="fat"></td>
+      </tr>
+    </tbody>
+  </table>
+</center>
+</div>
+
+    <script>
+      // Toggle webcam visibility
+      document
+        .getElementById("toggle-webcam")
+        .addEventListener("click", function () {
+          var webcamContainer = document.getElementById("webcam-container");
+          if (webcamContainer.style.display === "none") {
+            webcamContainer.style.display = "block";
+            this.textContent = "Hide Webcam"; // Update button text
+          } else {
+            webcamContainer.style.display = "none";
+            this.textContent = "Show Webcam"; // Update button text
+          }
+        });
+
+      // Optionally, you can add functionality for the webcam and photo capture here
+    </script>
+
+    <footer>
+      <div class="footer">
+        <div class="container">
+          <div class="row">
+            <div class="col-md-3 col-sm-6">
+              <div class="infoma text_align_left">
+                <h3>About</h3>
+                <p class="ipsum">
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+                  sedconsectetur
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="copyright">
+          <div class="container">
+            <div class="row">
+              <div class="col-md-12">
+                <p>© 2025 All Rights Reserved.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+
+    <script>
+      function reset() {
+        document.getElementById("image-form").reset();
+        document.getElementById("uploaded-image").style.display = "none";
+        document.getElementById("predicted-class").textContent =
+          "The predicted class will appear here.";
+        document.getElementById("nutrition-info").style.display = "none";
+        document.getElementById("other-info-container").style.display = "none";
+        document.getElementById("ingredients-info-container").style.display =
+          "none";
+        document.getElementById("text-path-file").textContent =
+          "Choose an image";
+      }
+      // Accéder à la webcam
+      const video = document.getElementById("video");
+      const canvas = document.getElementById("canvas");
+      const imageUploadInput = document.getElementById("image-upload");
+      const takePhotoButton = document.getElementById("takePhoto");
+
+     // Fonction pour vérifier si l'appareil est un mobile
+function isMobileDevice() {
+  return /Mobi|Android/i.test(navigator.userAgent);
+}
+
+// Demander l'accès à la webcam (caméra arrière si c'est un téléphone)
+navigator.mediaDevices
+  .getUserMedia({
+    video: {
+      facingMode: isMobileDevice() ? 'environment' : 'user' // 'environment' pour la caméra arrière, 'user' pour la caméra avant
+    }
+  })
+  .then((stream) => {
+    video.srcObject = stream;
+  })
+  .catch((error) => {
+    console.error("Erreur d'accès à la webcam : ", error);
+  });
+
+
+      // Fonction pour prendre la photo
+      takePhotoButton.addEventListener("click", () => {
+        reset();
+        const context = canvas.getContext("2d");
+        // Définir la taille du canvas en fonction de la taille du vidéo
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        // Dessiner l'image vidéo sur le canvas
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        // Convertir le canvas en image (format JPEG)
+        const imageUrl = canvas.toDataURL("image/jpeg");
+
+        // Créer un objet Blob à partir de l'image capturée
+        const byteString = atob(imageUrl.split(",")[1]);
+        const mimeString = imageUrl.split(",")[0].split(":")[1].split(";")[0];
+        const arrayBuffer = new ArrayBuffer(byteString.length);
+        const uintArray = new Uint8Array(arrayBuffer);
+
+        for (let i = 0; i < byteString.length; i++) {
+          uintArray[i] = byteString.charCodeAt(i);
+        }
+
+        const blob = new Blob([uintArray], { type: mimeString });
+        const file = new File([blob], "photo.jpg", { type: mimeString });
+
+        // Créer un objet DataTransfer pour assigner le fichier à l'input file
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        imageUploadInput.files = dataTransfer.files;
+
+        // Mettre à jour le texte du label
+        document.getElementById("text-path-file").innerText =
+          "Image sélectionnée : photo.jpg";
+
+        // Afficher la prévisualisation de l'image
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          // Ajouter la prévisualisation à un élément img
+          const previewImage = document.getElementById("uploaded-image");
+          previewImage.style.display = "block";
+          previewImage.src = e.target.result; // Mettre à jour l'URL de l'image
+        };
+        reader.readAsDataURL(file); // Lire le fichier comme une URL de données
+      });
+    </script>
+
+    <script>
+      // JavaScript to preview uploaded image
+      document
+        .getElementById("image-upload")
+        .addEventListener("change", function (e) {
+          var reader = new FileReader();
+          reader.onload = function () {
+            var preview = document.getElementById("uploaded-image");
+            preview.style.display = "block";
+            preview.src = reader.result;
+          };
+
+          const filePath = e.target.files[0].name; // Get the file name (you can't access full path due to security restrictions)
+          document.getElementById("text-path-file").textContent = filePath;
+
+          reader.readAsDataURL(e.target.files[0]);
+        });
+
+      // Function to return ingredients, nutrition, and additional info based on the predicted class
+      function getDishInfo(class_name) {
+        class_name = class_name.toLowerCase(); // Normalize the dish name
+
+        const dishData = {
+          pastilla: {
+            ingredients:
+              "Chicken, almonds, cinnamon, sugar, eggs, pastry sheets.",
+            nutrition: {
+              calories: "300 kcal",
+              protein: "25g",
+              carbs: "20g",
+              fat: "15g",
+            },
+            other_info:
+              "Pastilla is a traditional Moroccan dish, often associated with celebratory events such as weddings and feasts. Its origins date back to the Andalusian influence in Morocco, combining sweet and savory flavors, typically wrapped in a delicate pastry shell.",
+          },
+          "poulet mhamer": {
+            ingredients: "Chicken, onions, saffron, garlic, olive oil, cumin.",
+            nutrition: {
+              calories: "450 kcal",
+              protein: "30g",
+              carbs: "15g",
+              fat: "25g",
+            },
+            other_info:
+              "Poulet Mhamer is a flavorful Moroccan dish known for its rich spices, including saffron, which is a symbol of Moroccan cuisine. The chicken is slow-cooked to perfection, making it tender and infused with aromatic spices, often served during special family gatherings.",
+          },
+          rfissa: {
+            ingredients: "Chicken, lentils, fenugreek, onions, spices, bread.",
+            nutrition: {
+              calories: "500 kcal",
+              protein: "35g",
+              carbs: "45g",
+              fat: "10g",
+            },
+            other_info:
+              "A hearty Moroccan dish, rfissa is often served during celebrations like the birth of a child or religious holidays. Its origin is deeply rooted in Moroccan culture, where it represents comfort and nourishment, often enjoyed with family and friends.",
+          },
+          taktouka: {
+            ingredients:
+              "Tomatoes, bell peppers, onions, garlic, olive oil, cumin.",
+            nutrition: {
+              calories: "150 kcal",
+              protein: "3g",
+              carbs: "15g",
+              fat: "10g",
+            },
+            other_info:
+              "Taktouka is a healthy, vegetarian Moroccan dish made with roasted vegetables. It has its roots in the rural areas of Morocco, where it was traditionally prepared using locally grown produce. It is often enjoyed as a side dish or a light meal.",
+          },
+          "couscous btfaya": {
+            ingredients: "Couscous, lamb, chickpeas, carrots, onions, spices.",
+            nutrition: {
+              calories: "600 kcal",
+              protein: "40g",
+              carbs: "50g",
+              fat: "25g",
+            },
+            other_info:
+              "Couscous Btfaya is a classic Moroccan dish often served during large family meals, especially on Fridays, the holy day in Morocco. It reflects the tradition of sharing meals with loved ones and showcases the richness of Moroccan spices and lamb.",
+          },
+          "couscous legumes": {
+            ingredients:
+              "Couscous, zucchini, carrots, pumpkin, onions, chickpeas.",
+            nutrition: {
+              calories: "450 kcal",
+              protein: "12g",
+              carbs: "60g",
+              fat: "15g",
+            },
+            other_info:
+              "A vegetarian variation of couscous, couscous legumes is made with an assortment of seasonal vegetables. It is a staple in Moroccan households, especially during the harvest season, and symbolizes the country's deep connection to the land and agricultural traditions.",
+          },
+          hrira: {
+            ingredients:
+              "Tomatoes, lentils, chickpeas, beef, spices, coriander.",
+            nutrition: {
+              calories: "350 kcal",
+              protein: "20g",
+              carbs: "40g",
+              fat: "10g",
+            },
+            other_info:
+              "Hrira is a traditional Moroccan soup, commonly served during Ramadan to break the fast. This hearty soup is a perfect balance of protein, vegetables, and spices, and holds cultural significance as a dish that brings families together during the holy month.",
+          },
+          "tajine legume": {
+            ingredients:
+              "Vegetables, chickpeas, tomatoes, onions, olive oil, spices.",
+            nutrition: {
+              calories: "200 kcal",
+              protein: "8g",
+              carbs: "30g",
+              fat: "10g",
+            },
+            other_info:
+              "Tajine legume is a vegetarian stew, slow-cooked in a traditional Moroccan clay pot. The tajine pot is symbolic of Moroccan cuisine, and this dish is a testament to the country's mastery of transforming simple vegetables into a flavorful and filling meal.",
+          },
+          "tajine lham barkouk": {
+            ingredients: "Lamb, dried fruit, onions, spices, almonds.",
+            nutrition: {
+              calories: "550 kcal",
+              protein: "35g",
+              carbs: "30g",
+              fat: "25g",
+            },
+            other_info:
+              "Tajine Lham Barkouk is a rich and flavorful dish that combines tender lamb with dried fruit and almonds. This dish is often served during festive occasions and represents the Moroccan culinary art of combining savory and sweet flavors in one dish.",
+          },
+        };
+
+        if (dishData[class_name]) {
+          // Update general information about the dish
+          document.getElementById("other-info").textContent =
+            dishData[class_name].other_info;
+          document.getElementById("ingredients-info").textContent =
+            dishData[class_name].ingredients;
+
+          // Update nutrition information
+          const nutrition = dishData[class_name].nutrition;
+          document.getElementById("calories").textContent = nutrition.calories;
+          document.getElementById("protein").textContent = nutrition.protein;
+          document.getElementById("carbs").textContent = nutrition.carbs;
+          document.getElementById("fat").textContent = nutrition.fat;
+
+          // Show the nutrition table
+          document.getElementById("nutrition-info").style.display = "table";
+
+          // Display the info sections
+          document.getElementById("other-info-container").style.display =
+            "block";
+          document.getElementById("ingredients-info-container").style.display =
+            "block";
+        } else {
+          // If no data available for the dish
+          document.getElementById("other-info").textContent =
+            "Other Info: No information available.";
+          document.getElementById("ingredients-info").textContent =
+            "Ingredients: No information available.";
+          document.getElementById("nutrition-info").style.display = "none";
+        }
+      }
+
+      // Event listener for form submission
+      document
+        .getElementById("image-form")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const fileInput = document.getElementById("image-upload");
+          const formData = new FormData();
+          formData.append("file", fileInput.files[0]);
+
+          fetch("/predict", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              const predictedClass = data.class_name.toLowerCase();
+              document.getElementById(
+                "predicted-class"
+              ).textContent = `Predicted Class: ${predictedClass}`;
+
+              // Style d'affichage pour rendre le texte plus clair et distinct
+              const predictedClassElement =
+                document.getElementById("predicted-class");
+              predictedClassElement.style.color = "#fff"; // Couleur du texte
+              predictedClassElement.style.backgroundColor = "#ff6f61"; // Couleur de fond
+              predictedClassElement.style.padding = "11px 20px"; // Espacement interne
+              predictedClassElement.style.borderRadius = "5px"; // Coins arrondis
+              predictedClassElement.style.fontSize = "1.2em"; // Taille du texte
+              predictedClassElement.style.fontWeight = "bold"; // Texte en gras
+              predictedClassElement.style.textAlign = "center"; // Centrer le texte
+              predictedClassElement.style.marginTop = "10px"; // Ajouter un peu d'espace au-dessus
+
+              getDishInfo(predictedClass); // Update dish info
+
+              scrollToElementById("predicted-class");
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+            });
+        });
+
+      function reset() {
+        document.getElementById("image-form").reset();
+        document.getElementById("uploaded-image").style.display = "none";
+        document.getElementById("predicted-class").textContent =
+          "The predicted class will appear here.";
+        document.getElementById("nutrition-info").style.display = "none";
+        document.getElementById("other-info-container").style.display = "none";
+        document.getElementById("ingredients-info-container").style.display =
+          "none";
+        document.getElementById("text-path-file").textContent =
+          "Choose an image";
+      }
+
+      function reset2() {
+        document.getElementById("predicted-class").textContent =
+          "The predicted class will appear here.";
+        document.getElementById("nutrition-info").style.display = "none";
+        document.getElementById("other-info-container").style.display = "none";
+        document.getElementById("ingredients-info-container").style.display =
+          "none";
+        document.getElementById("text-path-file").textContent =
+          "Choose an image";
+      }
+
+      // Event listener for reset button
+      document
+        .getElementById("reset-button")
+        .addEventListener("click", function () {
+          reset();
+        });
+
+      function scrollToElementById(target_id) {
+        // Vérifiez si l'élément avec l'id donné existe
+        const targetElement = document.getElementById(target_id);
+        if (targetElement) {
+          // Faites défiler jusqu'à l'élément
+          targetElement.scrollIntoView({
+            behavior: "smooth", // Défilement fluide
+            block: "center", // Positionner l'élément au centre de l'écran
+          });
+        } else {
+          console.error(`L'élément avec l'id "${target_id}" n'existe pas.`);
+        }
+      }
+    </script>
+  </body>
+</html>
